@@ -27,7 +27,14 @@ app.use(helmet({
     ? {
         useDefaults: true,
         directives: {
-          'img-src': ["'self'", 'data:', 'blob:', 'https://*.tile.openstreetmap.org'],
+          'img-src': [
+            "'self'",
+            'data:',
+            'blob:',
+            'https://*.tile.openstreetmap.org',
+            'https://*.r2.cloudflarestorage.com',
+            'https://*.r2.dev',
+          ],
           'connect-src': ["'self'", 'https://*.tile.openstreetmap.org'],
         },
       }
