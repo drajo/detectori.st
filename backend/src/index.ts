@@ -23,8 +23,15 @@ const app = express();
 // ── Security middleware ───────────────────────────────────────────────────────
 
 app.use(helmet({
-  // Allow serving frontend from same origin
-  contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
+  contentSecurityPolicy: env.NODE_ENV === 'production'
+    ? {
+        useDefaults: true,
+        directives: {
+          'img-src': ["'self'", 'data:', 'blob:', 'https://*.tile.openstreetmap.org'],
+          'connect-src': ["'self'", 'https://*.tile.openstreetmap.org'],
+        },
+      }
+    : false,
 }));
 
 if (env.NODE_ENV === 'production') {
