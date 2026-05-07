@@ -96,6 +96,15 @@ app.use(errorHandler);
 // ── Start server ──────────────────────────────────────────────────────────────
 const server = app.listen(env.PORT, () => {
   console.log(`✅ Server running on port ${env.PORT} (${env.NODE_ENV})`);
+  console.log('[S3] config:', {
+    hasBucket: Boolean(env.S3_BUCKET),
+    bucket: env.S3_BUCKET,
+    region: env.S3_REGION,
+    hasEndpoint: Boolean(env.S3_ENDPOINT),
+    endpoint: env.S3_ENDPOINT,
+    hasAccessKey: Boolean(env.S3_ACCESS_KEY_ID),
+    hasSecretKey: Boolean(env.S3_SECRET_ACCESS_KEY),
+  });
 });
 
 const shutdown = async (signal: string) => {
