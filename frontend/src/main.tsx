@@ -61,6 +61,17 @@ function App() {
   );
 }
 
+const gtmId = import.meta.env.VITE_GTM_ID;
+if (gtmId) {
+  const w = window as Window & { dataLayer?: unknown[] };
+  w.dataLayer = w.dataLayer ?? [];
+  w.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+  const s = document.createElement('script');
+  s.async = true;
+  s.src = `https://www.googletagmanager.com/gtm.js?id=${gtmId}`;
+  document.head.appendChild(s);
+}
+
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');
 

@@ -35,8 +35,22 @@ app.use(helmet({
             'https://*.r2.cloudflarestorage.com',
             'https://*.r2.dev',
             'https://cdn.detectori.st',
+            'https://www.googletagmanager.com',
+            'https://*.google-analytics.com',
+            'https://*.analytics.google.com',
           ],
-          'connect-src': ["'self'", 'https://*.tile.openstreetmap.org'],
+          'script-src': [
+            "'self'",
+            'https://www.googletagmanager.com',
+          ],
+          'connect-src': [
+            "'self'",
+            'https://*.tile.openstreetmap.org',
+            'https://www.googletagmanager.com',
+            'https://*.google-analytics.com',
+            'https://*.analytics.google.com',
+          ],
+          'frame-src': ["'self'", 'https://www.googletagmanager.com'],
         },
       }
     : false,
