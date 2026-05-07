@@ -447,6 +447,54 @@ router.post(
   },
 );
 
+// ── POST /api/auth/resend-verification ───────────────────────────────────────
+
+const resendVerificationSchema = z.object({
+  email: z.string().email('Podaj prawidłowy adres e-mail'),
+});
+
+router.post(
+  '/resend-verification',
+  validate(resendVerificationSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = req.body as z.infer<typeof resendVerificationSchema>;
+
+      const RESPONSE_MESSAGE =
+        'Jeśli konto wymaga weryfikacji, wysłaliśmy nowy link aktywacyjny.';
+
+      const user = await prisma.user.findUnique({ where: { email } });
+
+      if (!user || user.isVerified) {
+        res.status(200).json({ message: RESPONSE_MESSAGE });
+        return;
+      }
+
+      await prisma.verificationToken.updateMany({
+        where: { userId: user.id, usedAt: null },
+        data: { usedAt: new Date() },
+      });
+
+      const verificationToken = generateVerificationToken();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await prisma.verificationToken.create({
+        data: { userId: user.id, token: verificationToken, expiresAt },
+      });
+
+      try {
+        await sendVerificationEmail(email, verificationToken, env.FRONTEND_URL);
+      } catch (emailErr) {
+        console.error('Błąd wysyłki e-maila weryfikacyjnego:', emailErr);
+      }
+
+      res.status(200).json({ message: RESPONSE_MESSAGE });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
 export default router;
 
 

@@ -31,4 +31,10 @@ export const authService = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  resendVerification: (email: string) =>
+    apiFetch<{ message: string }>('/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
 };

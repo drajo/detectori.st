@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input, Button } from '../components/ui';
 import { useAuthStore } from '../stores/authStore';
 import { ApiRequestError } from '../services/api';
+import { authService } from '../services/authService';
 
 interface FormErrors {
   email?: string;
@@ -17,6 +18,8 @@ export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendStatus, setResendStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
@@ -35,6 +38,8 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    setNeedsVerification(false);
+    setResendStatus('idle');
     if (!validate()) return;
     try {
       await login({ email, password });
@@ -45,12 +50,24 @@ export const LoginPage: React.FC = () => {
           setErrors({ general: 'Invalid email or password.' });
         } else if (err.status === 403) {
           setErrors({ general: 'Please verify your email address before signing in.' });
+          setNeedsVerification(true);
         } else {
           setErrors({ general: err.message });
         }
       } else {
         setErrors({ general: 'An unexpected error occurred. Please try again.' });
       }
+    }
+  };
+
+  const handleResend = async () => {
+    setResendStatus('sending');
+    try {
+      await authService.resendVerification(email);
+      setResendStatus('sent');
+    } catch {
+      setResendStatus('idle');
+      setErrors({ general: 'Could not resend the activation link. Try again in a moment.' });
     }
   };
 
@@ -101,6 +118,26 @@ export const LoginPage: React.FC = () => {
               <p className="text-sm text-explorer-danger text-center bg-explorer-danger/10 rounded-lg px-3 py-2" role="alert">
                 {errors.general}
               </p>
+            )}
+
+            {needsVerification && (
+              resendStatus === 'sent' ? (
+                <p className="text-sm text-explorer-text-secondary text-center bg-explorer-accent/10 rounded-lg px-3 py-2">
+                  If the account requires verification, we've sent a new activation link. Check your inbox.
+                </p>
+              ) : (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  onClick={handleResend}
+                  isLoading={resendStatus === 'sending'}
+                  disabled={resendStatus === 'sending'}
+                  className="w-full"
+                >
+                  Resend activation link
+                </Button>
+              )
             )}
 
             <Button type="submit" variant="primary" size="lg" isLoading={isLoading} disabled={isLoading} className="w-full mt-1">
