@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "concurrently --names \"backend,frontend\" --prefix-colors \"blue,green\" \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
     "build": "npm run build --workspace=shared && npm run build --workspace=frontend && npm run build --workspace=backend",
-    "start": "node backend/dist/index.js",
+    "start": "prisma migrate deploy --schema backend/prisma/schema.prisma && node backend/dist/index.js",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
   },
