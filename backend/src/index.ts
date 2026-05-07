@@ -27,6 +27,16 @@ app.use(helmet({
   contentSecurityPolicy: env.NODE_ENV === 'production' ? undefined : false,
 }));
 
+if (env.NODE_ENV === 'production') {
+  const canonicalHost = new URL(env.FRONTEND_URL).host;
+  app.use((req, res, next) => {
+    if (req.headers.host && req.headers.host !== canonicalHost) {
+      return res.redirect(301, `${env.FRONTEND_URL}${req.originalUrl}`);
+    }
+    next();
+  });
+}
+
 app.use(
   cors({
     origin: (origin, callback) => {
