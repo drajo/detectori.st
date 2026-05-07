@@ -61,8 +61,11 @@ export async function uploadFile(key: string, buffer: Buffer, mimeType: string):
     await getS3Client().send(command);
 
     // Zbuduj publiczny URL
+    if (env.S3_PUBLIC_BASE_URL) {
+      // R2 public bucket / custom domain / MinIO behind public host
+      return `${env.S3_PUBLIC_BASE_URL.replace(/\/$/, '')}/${key}`;
+    }
     if (env.S3_ENDPOINT) {
-      // MinIO / custom endpoint
       return `${env.S3_ENDPOINT}/${env.S3_BUCKET}/${key}`;
     }
     // AWS S3
