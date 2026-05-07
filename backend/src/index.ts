@@ -34,6 +34,7 @@ app.use(helmet({
             'https://*.tile.openstreetmap.org',
             'https://*.r2.cloudflarestorage.com',
             'https://*.r2.dev',
+            'https://cdn.detectori.st',
           ],
           'connect-src': ["'self'", 'https://*.tile.openstreetmap.org'],
         },
