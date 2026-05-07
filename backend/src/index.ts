@@ -59,7 +59,9 @@ app.use('/api/finds', findsRouter);
 
 // ── Serve frontend in production ──────────────────────────────────────────────
 if (env.NODE_ENV === 'production') {
+  // backend/dist/index.js → go up to project root → frontend/dist
   const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
+  console.log(`[STATIC] Serving frontend from: ${frontendDist}`);
   app.use(express.static(frontendDist));
   // SPA fallback — serve index.html for all non-API routes
   app.get('*', (_req, res) => {
