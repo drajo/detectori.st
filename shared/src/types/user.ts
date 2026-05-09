@@ -15,11 +15,13 @@ export interface RegisterRequest {
   username: string;
   password: string;
   confirmPassword: string;
+  recaptchaToken?: string;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+  recaptchaToken?: string;
 }
 
 export interface UpdateProfileRequest {
@@ -37,6 +39,7 @@ export interface ChangePasswordRequest {
 
 export interface ForgotPasswordRequest {
   email: string;
+  recaptchaToken?: string;
 }
 
 export interface ResetPasswordRequest {

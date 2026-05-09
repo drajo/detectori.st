@@ -59,6 +59,18 @@ export const Errors = {
   // Photo
   photoNotFound: () =>
     new AppError(404, 'PHOTO_NOT_FOUND', 'Photo not found.'),
+  // Place
+  placeNotFound: () =>
+    new AppError(404, 'PLACE_NOT_FOUND', 'Place not found.'),
+  placeCoordinatesInvalid: () =>
+    new AppError(422, 'PLACE_COORDINATES_INVALID', 'Invalid coordinates. Latitude must be -90 to 90, longitude -180 to 180.'),
+  placePhotoLimitExceeded: () =>
+    new AppError(400, 'PLACE_PHOTO_LIMIT_EXCEEDED', 'A place can have a maximum of 20 photos.'),
+  placePhotoNotFound: () =>
+    new AppError(404, 'PLACE_PHOTO_NOT_FOUND', 'Place photo not found.'),
+  // reCAPTCHA
+  recaptchaFailed: () =>
+    new AppError(400, 'RECAPTCHA_FAILED', 'Verification failed. Please try again.'),
   // Generic
   notFound: (resource = 'Resource') =>
     new AppError(404, 'NOT_FOUND', `${resource} not found.`),

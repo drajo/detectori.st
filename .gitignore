@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# Local file storage (when S3 not configured)
+backend/uploads/
+
 # Environment variables
 .env
 .env.local

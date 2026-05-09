@@ -4,6 +4,7 @@ import { Input, Button } from '../components/ui';
 import { useAuthStore } from '../stores/authStore';
 import { ApiRequestError } from '../services/api';
 import { authService } from '../services/authService';
+import { executeRecaptcha } from '../services/recaptcha';
 
 interface FormErrors {
   email?: string;
@@ -42,7 +43,8 @@ export const LoginPage: React.FC = () => {
     setResendStatus('idle');
     if (!validate()) return;
     try {
-      await login({ email, password });
+      const recaptchaToken = await executeRecaptcha('login');
+      await login({ email, password, recaptchaToken });
       navigate('/catalog');
     } catch (err) {
       if (err instanceof ApiRequestError) {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input, Button } from '../components/ui';
 import { authService } from '../services/authService';
 import { ApiRequestError } from '../services/api';
+import { executeRecaptcha } from '../services/recaptcha';
 
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -24,7 +25,8 @@ export const ForgotPasswordPage: React.FC = () => {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      await authService.forgotPassword({ email });
+      const recaptchaToken = await executeRecaptcha('forgot_password');
+      await authService.forgotPassword({ email, recaptchaToken });
       setSuccessMessage('If an account with that email exists, we\'ve sent a password reset link.');
     } catch (err) {
       if (err instanceof ApiRequestError) setErrors({ general: err.message });

@@ -19,6 +19,10 @@ import { CatalogPage } from './pages/CatalogPage';
 import { FindDetailPage } from './pages/FindDetailPage';
 import { NewFindPage } from './pages/NewFindPage';
 import { EditFindPage } from './pages/EditFindPage';
+import { PlacesCatalogPage } from './pages/PlacesCatalogPage';
+import { PlaceDetailPage } from './pages/PlaceDetailPage';
+import { NewPlacePage } from './pages/NewPlacePage';
+import { EditPlacePage } from './pages/EditPlacePage';
 import { MapPage } from './pages/MapPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -49,6 +53,10 @@ function App() {
             <Route path="/finds/new" element={<NewFindPage />} />
             <Route path="/finds/:id" element={<FindDetailPage />} />
             <Route path="/finds/:id/edit" element={<EditFindPage />} />
+            <Route path="/places" element={<PlacesCatalogPage />} />
+            <Route path="/places/new" element={<NewPlacePage />} />
+            <Route path="/places/:id" element={<PlaceDetailPage />} />
+            <Route path="/places/:id/edit" element={<EditPlacePage />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

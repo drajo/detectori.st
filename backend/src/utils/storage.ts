@@ -81,6 +81,23 @@ export async function uploadFile(key: string, buffer: Buffer, mimeType: string):
 }
 
 /**
+ * Wyodrębnia klucz S3 z publicznego URL pliku.
+ * Obsługuje AWS S3, MinIO i lokalny tryb /uploads.
+ */
+export function extractS3Key(url: string): string {
+  try {
+    if (url.startsWith('/uploads/')) {
+      return url.replace('/uploads/', '');
+    }
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/').filter(Boolean);
+    return pathParts.slice(1).join('/') || pathParts.join('/');
+  } catch {
+    return url;
+  }
+}
+
+/**
  * Usuwa plik z S3 (lub lokalnie jeśli S3 nie jest skonfigurowany).
  * @param key Klucz obiektu w S3
  */

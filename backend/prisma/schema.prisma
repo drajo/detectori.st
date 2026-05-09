@@ -21,6 +21,7 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   finds         Find[]
+  places        Place[]
   sessions      Session[]
   verifyTokens  VerificationToken[]
   resetTokens   PasswordResetToken[]
@@ -97,4 +98,34 @@ model Attribute {
   updatedAt DateTime @updatedAt
 
   find      Find     @relation(fields: [findId], references: [id], onDelete: Cascade)
+}
+
+model Place {
+  id          String       @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  tags        String[]     @default([])
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos      PlacePhoto[]
+
+  @@index([userId])
+}
+
+model PlacePhoto {
+  id           String   @id @default(cuid())
+  placeId      String
+  url          String
+  thumbnailUrl String
+  isCover      Boolean  @default(false)
+  sizeBytes    Int
+  mimeType     String
+  createdAt    DateTime @default(now())
+
+  place        Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
 }

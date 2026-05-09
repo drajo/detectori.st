@@ -31,6 +31,14 @@ const envSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_ENDPOINT: z.string().url().optional(),
   S3_PUBLIC_BASE_URL: z.string().url().optional(),
+
+  // Opcjonalne — reCAPTCHA v3
+  RECAPTCHA_SECRET_KEY: z.string().optional(),
+  RECAPTCHA_MIN_SCORE: z
+    .string()
+    .default('0.5')
+    .transform((val) => parseFloat(val))
+    .pipe(z.number().min(0).max(1)),
 });
 
 const parsed = envSchema.safeParse(process.env);

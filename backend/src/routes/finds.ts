@@ -5,30 +5,10 @@ import { prisma } from '../lib/prisma';
 import { requireAuth } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { Errors } from '../utils/errors';
-import { validateImageFile, generateThumbnail } from '../utils/imageProcessor';
-import { uploadFile, deleteFile } from '../utils/storage';
+import { validateImageFile, generateThumbnail, getMimeExtension } from '../utils/imageProcessor';
+import { uploadFile, deleteFile, extractS3Key } from '../utils/storage';
 
 const router = Router();
-
-// ── Pomocnicza funkcja do wyodrębniania klucza S3 z URL ──────────────────────
-
-function extractS3Key(url: string): string {
-  // URL może być: https://bucket.s3.region.amazonaws.com/key
-  // lub: http://localhost:9000/bucket/key (MinIO)
-  // lub: /uploads/key (lokalny)
-  try {
-    if (url.startsWith('/uploads/')) {
-      return url.replace('/uploads/', '');
-    }
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/').filter(Boolean);
-    // Dla MinIO: /bucket/key → usuń pierwszy segment (bucket)
-    // Dla AWS S3: /key → zwróć cały path
-    return pathParts.slice(1).join('/') || pathParts.join('/');
-  } catch {
-    return url;
-  }
-}
 
 // ── Schematy walidacji ────────────────────────────────────────────────────────
 
@@ -355,17 +335,6 @@ router.delete(
     }
   },
 );
-
-// ── Pomocnicza funkcja: rozszerzenie z mimeType ───────────────────────────────
-
-function getMimeExtension(mimeType: string): string {
-  const map: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-  };
-  return map[mimeType] ?? 'jpg';
-}
 
 // ── POST /api/finds/:id/photos ────────────────────────────────────────────────
 

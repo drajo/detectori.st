@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { loadRecaptcha } from '../services/recaptcha';
 
 const features = [
   {
@@ -47,6 +48,10 @@ const steps = [
 ];
 
 export const LandingPage: React.FC = () => {
+  useEffect(() => {
+    loadRecaptcha().catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen bg-explorer-bg text-explorer-text">
       {/* Nav */}

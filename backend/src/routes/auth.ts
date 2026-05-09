@@ -10,6 +10,7 @@ import { validate } from '../middleware/validate';
 import { Errors } from '../utils/errors';
 import { generateVerificationToken, generateAccessToken, generateRefreshToken } from '../utils/token';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../utils/email';
+import { verifyRecaptcha } from '../middleware/recaptcha';
 
 const router = Router();
 
@@ -34,6 +35,7 @@ const registerSchema = z
 
 router.post(
   '/register',
+  verifyRecaptcha('register'),
   validate(registerSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -150,6 +152,7 @@ const loginSchema = z.object({
 
 router.post(
   '/login',
+  verifyRecaptcha('login'),
   validate(loginSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -345,6 +348,7 @@ const resetPasswordSchema = z
 
 router.post(
   '/forgot-password',
+  verifyRecaptcha('forgot_password'),
   validate(forgotPasswordSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

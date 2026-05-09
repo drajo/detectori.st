@@ -17,6 +17,7 @@ import { prisma } from './lib/prisma';
 import authRouter from './routes/auth';
 import usersRouter from './routes/users';
 import findsRouter from './routes/finds';
+import placesRouter from './routes/places';
 
 const app = express();
 
@@ -42,6 +43,8 @@ app.use(helmet({
           'script-src': [
             "'self'",
             'https://www.googletagmanager.com',
+            'https://www.google.com',
+            'https://www.gstatic.com',
           ],
           'connect-src': [
             "'self'",
@@ -50,7 +53,11 @@ app.use(helmet({
             'https://*.google-analytics.com',
             'https://*.analytics.google.com',
           ],
-          'frame-src': ["'self'", 'https://www.googletagmanager.com'],
+          'frame-src': [
+            "'self'",
+            'https://www.googletagmanager.com',
+            'https://www.google.com',
+          ],
         },
       }
     : false,
@@ -95,6 +102,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/finds', findsRouter);
+app.use('/api/places', placesRouter);
 
 // ── Serve frontend in production ──────────────────────────────────────────────
 if (env.NODE_ENV === 'production') {

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Input, Button } from '../components/ui';
 import { authService } from '../services/authService';
 import { ApiRequestError } from '../services/api';
+import { executeRecaptcha } from '../services/recaptcha';
 
 interface FormErrors {
   email?: string;
@@ -41,7 +42,8 @@ export const RegisterPage: React.FC = () => {
     if (!validate()) return;
     setIsLoading(true);
     try {
-      await authService.register({ email, username, password, confirmPassword });
+      const recaptchaToken = await executeRecaptcha('register');
+      await authService.register({ email, username, password, confirmPassword, recaptchaToken });
       setIsSuccess(true);
     } catch (err) {
       if (err instanceof ApiRequestError) {
