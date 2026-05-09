@@ -1,6 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { PlaceListItem } from '../../types';
+
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+});
 
 interface PlaceCardProps {
   place: PlaceListItem;
@@ -16,6 +26,11 @@ function formatDate(dateString: string | null): string {
 }
 
 export const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
+  const hasCoords = place.latitude !== null && place.longitude !== null;
+  const position: [number, number] | null = hasCoords
+    ? [place.latitude as number, place.longitude as number]
+    : null;
+
   return (
     <Link
       to={`/places/${place.id}`}
@@ -23,27 +38,31 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({ place }) => {
       aria-label={`Place: ${place.name}`}
     >
       <div className="relative h-44 w-full overflow-hidden bg-explorer-bg">
-        {place.coverPhoto ? (
-          <img
-            src={place.coverPhoto.thumbnailUrl}
-            alt={`Photo of ${place.name}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+        {position ? (
+          <div className="h-full w-full pointer-events-none" aria-hidden="true">
+            <MapContainer
+              center={position}
+              zoom={13}
+              style={{ height: '100%', width: '100%' }}
+              zoomControl={false}
+              dragging={false}
+              scrollWheelZoom={false}
+              doubleClickZoom={false}
+              touchZoom={false}
+              keyboard={false}
+              attributionControl={false}
+              boxZoom={false}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={position} />
+            </MapContainer>
+          </div>
         ) : (
           <div className="flex h-full w-full items-center justify-center" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-explorer-border" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-          </div>
-        )}
-        {place.latitude !== null && place.longitude !== null && (
-          <div className="absolute top-2 right-2 bg-explorer-bg/80 backdrop-blur-sm rounded-md px-1.5 py-0.5 flex items-center gap-1">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-explorer-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span className="text-xs text-explorer-text-secondary">GPS</span>
           </div>
         )}
       </div>
