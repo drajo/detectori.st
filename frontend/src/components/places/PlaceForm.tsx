@@ -10,6 +10,7 @@ import { TagInput } from './TagInput';
 import {
   parseGoogleMapsUrl,
   parseArcanumUrl,
+  parseSusudataUrl,
   parseCoordinateString,
   parseAnyCoordinateInput,
   isGoogleShortLink,
@@ -52,7 +53,7 @@ interface FormErrors {
   coords?: string;
 }
 
-type ImportField = 'google' | 'coords' | 'arcanum';
+type ImportField = 'google' | 'coords' | 'arcanum' | 'susudata';
 type ImportStatus = { kind: 'idle' } | { kind: 'ok' } | { kind: 'error'; message: string };
 
 const MapClickHandler: React.FC<{ onMapClick: (lat: number, lng: number) => void }> = ({ onMapClick }) => {
@@ -84,11 +85,13 @@ export const PlaceForm: React.FC<PlaceFormProps> = ({
 
   const [googleUrl, setGoogleUrl] = useState('');
   const [arcanumUrl, setArcanumUrl] = useState('');
+  const [susudataUrl, setSusudataUrl] = useState('');
   const [coordsStr, setCoordsStr] = useState('');
   const [importStatus, setImportStatus] = useState<Record<ImportField, ImportStatus>>({
     google: { kind: 'idle' },
     coords: { kind: 'idle' },
     arcanum: { kind: 'idle' },
+    susudata: { kind: 'idle' },
   });
 
   const initialKey = useRef<string>('');
@@ -157,6 +160,8 @@ export const PlaceForm: React.FC<PlaceFormProps> = ({
       }
     } else if (field === 'arcanum') {
       parsed = parseArcanumUrl(raw);
+    } else if (field === 'susudata') {
+      parsed = parseSusudataUrl(raw);
     } else if (field === 'coords') {
       parsed = parseCoordinateString(raw);
       if (!parsed) {
@@ -300,6 +305,16 @@ export const PlaceForm: React.FC<PlaceFormProps> = ({
             disabled={isLoading}
             onChange={(v) => { setArcanumUrl(v); setImportStatus((s) => ({ ...s, arcanum: { kind: 'idle' } })); }}
             onResolve={(v) => tryImport('arcanum', v)}
+          />
+          <ImportField
+            id="place-import-susudata"
+            label="Susudata URL (Messtischblätter)"
+            placeholder="https://www.susudata.de/messtisch/tk25.html?lat=...&lng=..."
+            value={susudataUrl}
+            status={importStatus.susudata}
+            disabled={isLoading}
+            onChange={(v) => { setSusudataUrl(v); setImportStatus((s) => ({ ...s, susudata: { kind: 'idle' } })); }}
+            onResolve={(v) => tryImport('susudata', v)}
           />
         </div>
       </div>

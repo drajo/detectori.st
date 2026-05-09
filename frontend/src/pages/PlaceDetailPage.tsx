@@ -161,7 +161,7 @@ export const PlaceDetailPage: React.FC = () => {
                   <Marker position={mapPosition} />
                 </MapContainer>
               </div>
-              <LocationLinks latitude={place.latitude as number} longitude={place.longitude as number} />
+              <LocationLinks latitude={place.latitude as number} longitude={place.longitude as number} markerLabel={place.name} />
             </section>
           )}
         </div>

@@ -115,13 +115,38 @@ export function parseArcanumUrl(url: string): Coords | null {
 }
 
 /**
- * Próbuje sparsować dowolny tekst zawierający koordynaty — Google URL, Arcanum URL lub "lat, lng".
+ * Parsuje URL susudata.de (mapy historyczne Messtischblätter) z parametrami lat= i lng=.
+ */
+export function parseSusudataUrl(url: string): Coords | null {
+  if (!url) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(url.trim());
+  } catch {
+    return null;
+  }
+  if (!/(^|\.)susudata\.de$/i.test(parsed.hostname)) return null;
+
+  const latRaw = parsed.searchParams.get('lat');
+  const lngRaw = parsed.searchParams.get('lng');
+  if (!latRaw || !lngRaw) return null;
+
+  const lat = parseFloat(latRaw);
+  const lng = parseFloat(lngRaw);
+  if (!isValidLatLng(lat, lng)) return null;
+  return { lat: round6(lat), lng: round6(lng) };
+}
+
+/**
+ * Próbuje sparsować dowolny tekst zawierający koordynaty — Google URL, Arcanum URL,
+ * Susudata URL lub "lat, lng".
  * Zwraca null jeśli żaden parser nie pasuje.
  */
 export function parseAnyCoordinateInput(input: string): Coords | null {
   return (
     parseGoogleMapsUrl(input) ??
     parseArcanumUrl(input) ??
+    parseSusudataUrl(input) ??
     parseCoordinateString(input)
   );
 }
@@ -138,6 +163,9 @@ export function buildCoordinateString(lat: number, lng: number): string {
 
 /**
  * Buduje URL Arcanum z bbox o promieniu ~2.5km wokół punktu.
+ * Domyślnie używa mapy "europe-19century-secondsurvey" (Drugi Pomiar Wojskowy
+ * Habsburgów, pokrywa Europę Środkową) z warstwą 158, by Arcanum nie pokazywał
+ * popupu z wyborem mapy.
  */
 export function buildArcanumUrl(lat: number, lng: number): string {
   const clampedLat = clampLat(lat);
@@ -148,5 +176,23 @@ export function buildArcanumUrl(lat: number, lng: number): string {
   const minY = (y - halfSize).toFixed(2);
   const maxX = (x + halfSize).toFixed(2);
   const maxY = (y + halfSize).toFixed(2);
-  return `https://maps.arcanum.com/en/?bbox=${encodeURIComponent(`${minX},${minY},${maxX},${maxY}`)}`;
+  const bbox = encodeURIComponent(`${minX},${minY},${maxX},${maxY}`);
+  return `https://maps.arcanum.com/en/map/europe-19century-secondsurvey/?bbox=${bbox}&layers=158`;
+}
+
+/**
+ * Buduje URL susudata.de Messtischblätter z markerem (opcjonalnie nazwa miejsca).
+ */
+export function buildSusudataUrl(lat: number, lng: number, marker?: string): string {
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lng: String(lng),
+    zoom: '17',
+    opa: '0.7',
+    overlays: 'tk25,',
+  });
+  if (marker && marker.trim()) {
+    params.set('marker', marker.trim());
+  }
+  return `https://www.susudata.de/messtisch/tk25.html?${params.toString()}`;
 }
