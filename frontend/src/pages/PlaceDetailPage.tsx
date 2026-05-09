@@ -9,6 +9,7 @@ import { ApiRequestError } from '../services/api';
 import { Button, Modal, Spinner } from '../components/ui';
 import { PlacePhotoGallery } from '../components/places/PlacePhotoGallery';
 import { LocationLinks } from '../components/places/LocationLinks';
+import { SusudataEmbed } from '../components/places/SusudataEmbed';
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -166,6 +167,13 @@ export const PlaceDetailPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {mapPosition && (
+        <section className="card p-5 mt-6">
+          <h2 className="font-display font-semibold text-explorer-text mb-3">Historical map</h2>
+          <SusudataEmbed latitude={place.latitude as number} longitude={place.longitude as number} markerLabel={place.name} />
+        </section>
+      )}
 
       <Modal isOpen={isDeleteModalOpen} onClose={() => { if (!isDeleting) setIsDeleteModalOpen(false); }} title="Delete place">
         <p className="text-sm text-explorer-text-secondary mb-4">

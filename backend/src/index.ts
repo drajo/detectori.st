@@ -57,6 +57,7 @@ app.use(helmet({
             "'self'",
             'https://www.googletagmanager.com',
             'https://www.google.com',
+            'https://www.susudata.de',
           ],
         },
       }
