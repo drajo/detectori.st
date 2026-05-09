@@ -78,21 +78,54 @@ router.get(
     try {
       // Parsuj i waliduj query params
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+      const limit = Math.min(500, Math.max(1, parseInt(req.query.limit as string) || 20));
       const search = (req.query.search as string) || undefined;
       const sortBy = (['createdAt', 'discoveryDate', 'name'].includes(req.query.sortBy as string)
         ? req.query.sortBy
         : 'createdAt') as 'createdAt' | 'discoveryDate' | 'name';
       const sortOrder = (req.query.sortOrder === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc';
 
+      // Parsuj attrFilter — JSON-encoded { [key]: string[] }
+      // Logika: OR w obrębie klucza (in: [...]), AND między kluczami
+      let attrFilter: Record<string, string[]> = {};
+      const attrFilterRaw = req.query.attrFilter as string | undefined;
+      if (attrFilterRaw) {
+        try {
+          const parsed = JSON.parse(attrFilterRaw);
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            for (const [k, v] of Object.entries(parsed)) {
+              if (typeof k !== 'string' || k.length === 0 || k.length > 100) continue;
+              if (!Array.isArray(v)) continue;
+              const cleanVals = v
+                .filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 500)
+                .slice(0, 50);
+              if (cleanVals.length > 0) attrFilter[k] = cleanVals;
+            }
+          }
+        } catch {
+          // ignore — pusty attrFilter = brak filtra
+        }
+      }
+
+      const attrConditions = Object.entries(attrFilter).map(([key, values]) => ({
+        attributes: { some: { key, value: { in: values } } },
+      }));
+
       // Warunek where
       const where = {
         userId: req.user!.id,
-        ...(search
+        ...(search || attrConditions.length > 0
           ? {
-              OR: [
-                { name: { contains: search, mode: 'insensitive' as const } },
-                { description: { contains: search, mode: 'insensitive' as const } },
+              AND: [
+                ...(search
+                  ? [{
+                      OR: [
+                        { name: { contains: search, mode: 'insensitive' as const } },
+                        { description: { contains: search, mode: 'insensitive' as const } },
+                      ],
+                    }]
+                  : []),
+                ...attrConditions,
               ],
             }
           : {}),
@@ -111,6 +144,7 @@ router.get(
               where: { isCover: true },
               take: 1,
             },
+            attributes: { orderBy: { createdAt: 'asc' } },
           },
         }),
       ]);
@@ -126,6 +160,7 @@ router.get(
         createdAt: find.createdAt,
         updatedAt: find.updatedAt,
         coverPhoto: find.photos[0] ?? null,
+        attributes: find.attributes,
       }));
 
       res.status(200).json({
@@ -137,6 +172,33 @@ router.get(
           totalPages: Math.ceil(total / limit),
         },
       });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// ── GET /api/finds/attributes/facets ─────────────────────────────────────────
+
+router.get(
+  '/attributes/facets',
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const rows = await prisma.$queryRaw<Array<{ key: string; value: string; count: bigint }>>`
+        SELECT a."key" AS key, a."value" AS value, COUNT(*)::bigint AS count
+        FROM "Attribute" a
+        JOIN "Find" f ON f.id = a."findId"
+        WHERE f."userId" = ${req.user!.id}
+        GROUP BY a."key", a."value"
+        ORDER BY a."key" ASC, count DESC, a."value" ASC
+      `;
+      const facets: Record<string, Array<{ value: string; count: number }>> = {};
+      for (const row of rows) {
+        if (!facets[row.key]) facets[row.key] = [];
+        facets[row.key].push({ value: row.value, count: Number(row.count) });
+      }
+      res.status(200).json(facets);
     } catch (err) {
       next(err);
     }

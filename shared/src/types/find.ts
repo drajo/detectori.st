@@ -40,6 +40,7 @@ export interface FindListItem {
   createdAt: string;
   updatedAt: string;
   coverPhoto: FindPhoto | null;
+  attributes: FindAttribute[];
 }
 
 export interface FindMapMarker {
@@ -85,4 +86,12 @@ export interface FindListQuery {
   search?: string;
   sortBy?: FindSortBy;
   sortOrder?: SortOrder;
+  attrFilter?: Record<string, string[]>;
 }
+
+export interface AttributeFacetValue {
+  value: string;
+  count: number;
+}
+
+export type AttributeFacets = Record<string, AttributeFacetValue[]>;
